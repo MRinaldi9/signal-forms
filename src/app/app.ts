@@ -1,12 +1,14 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, RouterLink],
   template: `
-    <h1>Welcome to {{ title() }}!</h1>
-
+    <h1>Playground</h1>
+    <nav class="flex ">
+      <a class="m-2 p-2 border border-black rounded" routerLink="signal-forms">Signal Forms</a>
+    </nav>
     <router-outlet />
   `,
   styles: [],
