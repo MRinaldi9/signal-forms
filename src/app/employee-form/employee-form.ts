@@ -3,180 +3,32 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   apply,
+  applyWhen,
   Control,
+  customError,
   email,
   FieldPath,
   FieldValidator,
   form,
   hidden,
+  minLength,
+  Property,
+  property,
   required,
   schema,
+  submit,
   validate,
-  ValidationError,
-  WithoutField,
 } from '@angular/forms/signals';
 @Component({
   selector: 'app-employee-form',
   imports: [Control, JsonPipe, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h2 class="text-2xl font-bold mb-6 text-gray-800">Informazioni Dipendente</h2>
-    <form class="space-y-6" (ngSubmit)="onSubmit()">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="flex flex-col">
-          <label for="firstname" class="mb-2 font-semibold text-gray-700">Nome</label>
-          <input
-            id="firstname"
-            class="border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-            [control]="formEmployee.firstname"
-          />
-          @if(formEmployee.firstname().invalid() && formEmployee.firstname().dirty()){
-          <small class="text-red-500 mt-1">{{
-            formEmployee.firstname().errors()[0].message
-          }}</small>
-          }
-        </div>
-
-        <div class="flex flex-col">
-          <label for="lastname" class="mb-2 font-semibold text-gray-700">Cognome</label>
-          <input
-            id="lastname"
-            class="border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-            [control]="formEmployee.lastname"
-          />
-          @if(formEmployee.lastname().invalid() && formEmployee.lastname().dirty()){
-          <small class="text-red-500 mt-1">{{ formEmployee.lastname().errors()[0].message }}</small>
-          }
-        </div>
-      </div>
-
-      <div class="flex flex-col">
-        <label for="email" class="mb-2 font-semibold text-gray-700">Email</label>
-        <input
-          id="email"
-          class="border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          [control]="formEmployee.email"
-          type="email"
-        />
-        @if(formEmployee.email().invalid() && formEmployee.email().dirty()){
-        <small class="text-red-500 mt-1">{{ formEmployee.email().errors()[0].message }}</small>
-        }
-      </div>
-
-      <div class="flex flex-col">
-        <label for="department" class="mb-2 font-semibold text-gray-700">Reparto</label>
-        <select
-          id="department"
-          class="border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          [control]="formEmployee.department"
-        >
-          <option value="">-- Seleziona --</option>
-          <option value="IT">IT</option>
-          <option value="HR">HR</option>
-          <option value="Sales">Sales</option>
-        </select>
-      </div>
-
-      @if(!formEmployee.skills().hidden()){
-      <div class="flex flex-col space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <h4 class="font-semibold text-gray-800">Skill Tecniche</h4>
-        <div class="space-y-2">
-          @for (skill of formEmployee.skills; track skill) {
-          <div class="flex items-center gap-2">
-            <input
-              class="flex-grow border-gray-300 border p-2 rounded-md bg-gray-100"
-              [control]="skill"
-              readonly
-            />
-            <button
-              type="button"
-              (click)="removeSkill(skill().value())"
-              class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition"
-            >
-              Rimuovi
-            </button>
-          </div>
-          }
-        </div>
-        <div class="flex items-center gap-2 pt-2">
-          <input
-            type="text"
-            placeholder="Aggiungi una skill tecnica"
-            [control]="controlNewSkill"
-            class="flex-grow border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          />
-          <button
-            type="button"
-            [disabled]="controlNewSkill().invalid()"
-            (click)="addSkill()"
-            class="bg-blue-600 text-white font-semibold px-4 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
-          >
-            Aggiungi
-          </button>
-        </div>
-      </div>
-      }
-      <div class="flex flex-col">
-        <label for="password" class="mb-2 font-semibold text-gray-700">Password</label>
-        <input
-          id="password"
-          class="border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          [control]="formEmployee.password"
-          type="password"
-        />
-        @if(formEmployee.password().invalid() && formEmployee.password().dirty()){
-        <small class="text-red-500 mt-1">{{ formEmployee.password().errors()[0].message }}</small>
-        }
-      </div>
-      <div class="flex flex-col">
-        <label
-          for="confirm-password"
-          class="mb-2 font-semibold text-gray-700 peer-required:after:content-['*'] peer-required:after:text-red-500"
-          >Confirm Password</label
-        >
-        <input
-          id="confirm-password"
-          class="peer border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          [control]="formEmployee.confirmPassword"
-          type="email"
-        />
-        @if(formEmployee.confirmPassword().invalid() && formEmployee.confirmPassword().dirty()){
-        <small class="text-red-500 mt-1">{{
-          formEmployee.confirmPassword().errors()[0].message
-        }}</small>
-        }
-      </div>
-      <div class="flex items-center gap-2">
-        <input type="checkbox" id="terms" class="peer" [control]="formEmployee.terms" />
-        <label
-          for="terms"
-          class="font-semibold text-gray-700 peer-required:after:content-['*'] peer-required:after:text-red-500"
-        >
-          Accetto i termini
-        </label>
-      </div>
-
-      <button
-        type="submit"
-        [disabled]="formEmployee().invalid()"
-        class="bg-blue-600 text-white font-semibold px-4 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
-      >
-        Submit
-      </button>
-    </form>
-
-    <!-- Debug -->
-    <details class="mt-4">
-      <summary class="cursor-pointer font-semibold text-gray-700">Debug</summary>
-      <fieldset class="border rounded-xl p-3 mt-2 bg-gray-50">
-        <pre class="text-sm text-gray-800">{{ formEmployee().value() | json }}</pre>
-      </fieldset>
-    </details>
-  `,
+  templateUrl: './employee-form.html',
   styles: ``,
   host: { class: 'block max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg' },
 })
 export default class EmployeeForm {
+  #key: Property<string> | undefined;
   protected controlNewSkill = form(signal(''), (schema) => {
     required(schema, { message: 'Skill is required' });
   });
@@ -194,10 +46,19 @@ export default class EmployeeForm {
     }),
     (schema) => {
       required(schema.firstname, { message: 'firstname is required' });
+      // Metadata or validation
+      this.#key = property(schema.firstname, () => 'pippo');
       required(schema.lastname, { message: 'lastname is required' });
       apply(schema.email, emailSchema);
       required(schema.department, { message: 'department is required' });
       hidden(schema.skills, ({ valueOf }) => valueOf(schema.department) !== 'IT');
+      applyWhen(
+        schema.skills,
+        ({ valueOf }) => valueOf(schema.department) === 'IT',
+        (skills) => {
+          minLength(skills, 1, { message: 'At least one skill is required' });
+        }
+      );
       validate(schema.confirmPassword, confirmPasswordSchema(schema));
       required(schema.terms);
     }
@@ -214,8 +75,24 @@ export default class EmployeeForm {
     this.formEmployee.skills().value.update((values) => values.filter((s) => s !== skill));
   }
 
-  protected onSubmit() {
-    console.log(this.formEmployee().value());
+  protected async onSubmit() {
+    // form is not submitting and value is not
+    console.log(this.formEmployee().submitting());
+    let resolveOut: () => void;
+    const statusSubmitting = submit(this.formEmployee, async (form) => {
+      // here it start to submit and the value is true
+      console.log(form().submitting(), form().valid());
+      const { resolve } = Promise.withResolvers<void>();
+      resolveOut = resolve;
+    });
+    // here the form continue to stay in submitting status because the promise is not resolved
+    console.log(this.formEmployee().submitting());
+    // after resolving the promise...
+    resolveOut!();
+    // and awaiting the end of the submission...
+    await statusSubmitting;
+    // the form is not submitting anymore and return false
+    console.log(this.formEmployee().submitting());
   }
 }
 
@@ -225,10 +102,10 @@ export const confirmPasswordSchema = (
   return ({ valueOf, value: confirmPassword }) => {
     const password = valueOf(path.password);
     if (password !== confirmPassword())
-      return {
+      return customError({
         kind: 'confirmPassword',
         message: 'Password do not match',
-      } as WithoutField<ValidationError>;
+      });
     return undefined;
   };
 };
