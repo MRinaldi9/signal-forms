@@ -8,8 +8,8 @@
         class="border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
         [control]="formEmployee.firstname"
       />
-      @if(formEmployee.firstname().invalid() && formEmployee.firstname().dirty()){
-      <small class="text-red-500 mt-1">{{ formEmployee.firstname().errors()[0].message }}</small>
+      @if (formEmployee.firstname().invalid() && formEmployee.firstname().dirty()) {
+        <small class="text-red-500 mt-1">{{ formEmployee.firstname().errors()[0].message }}</small>
       }
     </div>
 
@@ -20,8 +20,8 @@
         class="border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
         [control]="formEmployee.lastname"
       />
-      @if(formEmployee.lastname().invalid() && formEmployee.lastname().dirty()){
-      <small class="text-red-500 mt-1">{{ formEmployee.lastname().errors()[0].message }}</small>
+      @if (formEmployee.lastname().invalid() && formEmployee.lastname().dirty()) {
+        <small class="text-red-500 mt-1">{{ formEmployee.lastname().errors()[0].message }}</small>
       }
     </div>
   </div>
@@ -34,8 +34,8 @@
       [control]="formEmployee.email"
       type="email"
     />
-    @if(formEmployee.email().invalid() && formEmployee.email().dirty()){
-    <small class="text-red-500 mt-1">{{ formEmployee.email().errors()[0].message }}</small>
+    @if (formEmployee.email().invalid() && formEmployee.email().dirty()) {
+      <small class="text-red-500 mt-1">{{ formEmployee.email().errors()[0].message }}</small>
     }
   </div>
 
@@ -53,49 +53,73 @@
     </select>
   </div>
 
-  @if(!formEmployee.skills().hidden()){
-  <div class="flex flex-col space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-    <h4 class="font-semibold text-gray-800">Skill Tecniche</h4>
-    <div class="space-y-2">
-      @for (skill of formEmployee.skills; track skill) {
-      <div class="flex items-center gap-2">
+  <div class="relative flex flex-col">
+    <label for="manager" class="mb-2 font-semibold text-gray-700">Manager</label>
+    <input
+      id="manager"
+      class="border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+      [control]="formEmployee.manager"
+      type="text"
+      autocomplete="off"
+    />
+    @let showAutoComplete = formEmployee.manager().dirty() && formEmployee.manager().value();
+    @if (showAutoComplete && managersRef.hasValue() && managersRef.value().length) {
+      @let managers = managersRef.value();
+      <ul
+        class="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 top-full"
+      >
+        @for (manager of managers; track manager.id) {
+          <li class="px-4 py-2 cursor-pointer hover:bg-gray-100" (click)="selectManager(manager)">
+            {{ manager.name }}
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  @if (!formEmployee.skills().hidden()) {
+    <div class="flex flex-col space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+      <h4 class="font-semibold text-gray-800">Skill Tecniche</h4>
+      <div class="space-y-2">
+        @for (skill of formEmployee.skills; track skill) {
+          <div class="flex items-center gap-2">
+            <input
+              class="flex-grow border-gray-300 border p-2 rounded-md bg-gray-100"
+              [control]="skill"
+              readonly
+            />
+            <button
+              type="button"
+              (click)="removeSkill(skill().value())"
+              class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition"
+            >
+              Rimuovi
+            </button>
+          </div>
+        }
+      </div>
+      <div class="flex items-center gap-2 pt-2">
         <input
-          class="flex-grow border-gray-300 border p-2 rounded-md bg-gray-100"
-          [control]="skill"
-          readonly
+          type="text"
+          placeholder="Aggiungi una skill tecnica"
+          [control]="controlNewSkill"
+          class="flex-grow border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
         />
         <button
           type="button"
-          (click)="removeSkill(skill().value())"
-          class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition"
+          [disabled]="controlNewSkill().invalid()"
+          (click)="addSkill()"
+          class="bg-blue-600 text-white font-semibold px-4 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
         >
-          Rimuovi
+          Aggiungi
         </button>
       </div>
-      }
+      <small class="text-red-500">
+        @if (formEmployee.skills().invalid()) {
+          {{ formEmployee.skills().errors()[0].message }}
+        }
+      </small>
     </div>
-    <div class="flex items-center gap-2 pt-2">
-      <input
-        type="text"
-        placeholder="Aggiungi una skill tecnica"
-        [control]="controlNewSkill"
-        class="flex-grow border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-      />
-      <button
-        type="button"
-        [disabled]="controlNewSkill().invalid()"
-        (click)="addSkill()"
-        class="bg-blue-600 text-white font-semibold px-4 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
-      >
-        Aggiungi
-      </button>
-    </div>
-    <small class="text-red-500">
-      @if(formEmployee.skills().invalid()){
-      {{ formEmployee.skills().errors()[0].message }}
-      }
-    </small>
-  </div>
   }
   <div class="flex flex-col">
     <label for="password" class="mb-2 font-semibold text-gray-700">Password</label>
@@ -105,8 +129,8 @@
       [control]="formEmployee.password"
       type="password"
     />
-    @if(formEmployee.password().invalid() && formEmployee.password().dirty()){
-    <small class="text-red-500 mt-1">{{ formEmployee.password().errors()[0].message }}</small>
+    @if (formEmployee.password().invalid() && formEmployee.password().dirty()) {
+      <small class="text-red-500 mt-1">{{ formEmployee.password().errors()[0].message }}</small>
     }
   </div>
   <div class="flex flex-col">
@@ -121,25 +145,17 @@
       [control]="formEmployee.confirmPassword"
       type="input"
     />
-    @if(formEmployee.confirmPassword().invalid() && formEmployee.confirmPassword().dirty()){
-    <small class="text-red-500 mt-1">{{
-      formEmployee.confirmPassword().errors()[0].message
-    }}</small>
+    @if (formEmployee.confirmPassword().invalid() && formEmployee.confirmPassword().dirty()) {
+      <small class="text-red-500 mt-1">{{
+        formEmployee.confirmPassword().errors()[0].message
+      }}</small>
     }
   </div>
-  <div class="flex items-center gap-2">
-    <input type="checkbox" id="terms" class="peer" [control]="formEmployee.terms" />
-    <label
-      for="terms"
-      class="font-semibold text-gray-700 peer-required:after:content-['*'] peer-required:after:text-red-500"
-    >
-      Accetto i termini
-    </label>
-  </div>
+  <app-criteria-terms [control]="formEmployee.terms"></app-criteria-terms>
 
   <button
     type="submit"
-    [disabled]="formEmployee().invalid()"
+    [disabled]="formEmployee().invalid() || formEmployee().submitting()"
     class="bg-blue-600 text-white font-semibold px-4 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
   >
     Submit
@@ -155,9 +171,9 @@
     </fieldset>
   </details>
   <details class="mt-4">
-    <summary class="cursor-pointer font-semibold text-gray-700">Debug Status</summary>
+    <summary class="cursor-pointer font-semibold text-gray-700">Debug Form Status</summary>
     <fieldset class="border rounded-xl p-3 mt-2 bg-gray-50">
-      <pre class="text-sm text-gray-800">{{ !formEmployee().invalid() }}</pre>
+      <pre class="text-sm text-gray-800">is Valid: {{ formEmployee().valid() }}</pre>
     </fieldset>
   </details>
   <details class="mt-4">
