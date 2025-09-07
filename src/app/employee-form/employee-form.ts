@@ -12,20 +12,16 @@ import {
   apply,
   applyWhen,
   Control,
-  customError,
-  email,
-  FieldPath,
-  FieldValidator,
   form,
   hidden,
   minLength,
   Property,
   property,
   required,
-  schema,
   submit,
   validate,
 } from '@angular/forms/signals';
+import { confirmPasswordSchema, emailSchema } from '../utils/schema';
 import { CriteriaTerms } from './criteria-terms/criteria-terms';
 @Component({
   selector: 'app-employee-form',
@@ -36,7 +32,7 @@ import { CriteriaTerms } from './criteria-terms/criteria-terms';
   host: { class: 'block max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg' },
 })
 export default class EmployeeForm {
-  #managers!: Property<ResourceRef<any>>;
+  #managersKey!: Property<ResourceRef<any>>;
   protected controlNewSkill = form(signal(''), (schema) => {
     required(schema, { message: 'Skill is required' });
   });
@@ -55,8 +51,8 @@ export default class EmployeeForm {
     }),
     (schema) => {
       required(schema.firstname, { message: 'firstname is required' });
-      // Metadata or validation or async data fetching
-      this.#managers = property(schema.manager, ({ value }) => {
+      // with property is possible to add metadata or validation or async data fetching
+      this.#managersKey = property(schema.manager, ({ value }) => {
         const managerValue = computed(() => (value() === '' ? undefined : value()));
         return resource({
           params: () => managerValue(),
@@ -84,7 +80,7 @@ export default class EmployeeForm {
     },
   );
 
-  managersRef = this.formEmployee.manager().property(this.#managers)!;
+  managersRef = this.formEmployee.manager().property(this.#managersKey)!;
 
   protected selectManager(manager: { name: string }) {
     this.formEmployee.manager().value.set(manager.name);
@@ -117,21 +113,3 @@ export default class EmployeeForm {
     console.log(this.formEmployee().submitting());
   }
 }
-
-export const confirmPasswordSchema = (
-  path: FieldPath<{ password: string }>,
-): FieldValidator<string> => {
-  return ({ valueOf, value: confirmPassword }) => {
-    const password = valueOf(path.password);
-    if (password !== confirmPassword())
-      return customError({
-        kind: 'confirmPassword',
-        message: 'Password do not match',
-      });
-    return undefined;
-  };
-};
-export const emailSchema = schema<string>((field) => {
-  required(field, { message: 'Email is required' });
-  email(field, { message: 'Email is not valid' });
-});

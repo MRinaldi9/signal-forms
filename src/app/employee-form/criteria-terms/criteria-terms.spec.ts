@@ -1,23 +1,21 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
+import { signal, twoWayBinding } from '@angular/core';
 import { CriteriaTerms } from './criteria-terms';
 
 describe('CriteriaTerms', () => {
-  let component: CriteriaTerms;
-  let fixture: ComponentFixture<CriteriaTerms>;
-
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CriteriaTerms]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(CriteriaTerms);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+      imports: [CriteriaTerms],
+    }).compileComponents();
   });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should be checked', async () => {
+    const fixture = TestBed.createComponent(CriteriaTerms, {
+      bindings: [twoWayBinding('checked', signal(true))],
+    });
+    const instance = fixture.componentInstance;
+    await fixture.whenStable();
+    expect(instance).toBeTruthy();
+    expect(instance.checked()).toBe(true);
   });
 });
